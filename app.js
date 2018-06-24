@@ -6,13 +6,13 @@ const axios = require('axios');
 
 const clientID = process.env.CLIENT_ID
 const clientSecret = process.env.CLIENT_SECRET
+const slackToken = process.env.SLACK_TOKEN
 
 let token = ''
 let response = {}
 let auth_code = ''
 let timeRemaining = 1000
 let currentSong = ''
-
 
 const getToken = (res) => {
   response = res.json()
@@ -34,14 +34,12 @@ const getAuth = (token) => {
   })
     .then(function (response) {
       auth_code = response.data.access_token
-      console.log('now in getAuth, Timer is: ', timeRemaining)
       timerCheck()
     })
-    .catch(error => console.error('Error inside getAuth()', error))
+    .catch(error => console.error(error))
 }
 
 const getCurrentlyPlaying = () => {
-  console.log('now in getCurrentlyPlaying, Timer is: ', timeRemaining)
   axios.get('https://api.spotify.com/v1/me/player/currently-playing', {
     headers: {
       Authorization: `Bearer ${auth_code}`
@@ -51,23 +49,34 @@ const getCurrentlyPlaying = () => {
       timeRemaining = (response.data.item.duration_ms - response.data.progress_ms) + 1000
       currentSong = response.data.item.artists[0].name + ' - ' + response.data.item.name
       console.log('Timeout is:', timeRemaining, 'Song is: ', currentSong)
-      return console.log('DID IT!')
+      setStatus(currentSong)
     })
-    .catch(error => console.error('Error:', error))
+    .catch(error => console.error(error))
 }
 
 const timerCheck = () => {
-  console.log('now in timerCheck, Timer is: ', timeRemaining)
   getCurrentlyPlaying()
-  console.log('sup')
   setTimeout(timerCheck, timeRemaining)
+}
+
+const setStatus = (currentSong) => {
+  axios.post('https://slack.com/api/users.profile.set', {
+    profile: {
+      'status_text': `${currentSong}`,
+      'status_emoji': ':spotify:'
+    }
+  }, {
+      headers: {
+        Authorization: `Bearer ${slackToken}`,
+      }
+    }
+  ).catch(error => console.error(error))
 }
 
 opn(`https://accounts.spotify.com/authorize?client_id=${clientID}&response_type=code&redirect_uri=http://localhost:3001/callback&scope=user-read-currently-playing%20user-read-playback-state`)
 
 app.get('/callback', function (req, res) {
   res.send('You can now close this window 👋!')
-
   getToken(res)
   getAuth(token)
 })

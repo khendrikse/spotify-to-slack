@@ -1,2 +1,3 @@
 CLIENT_ID=fake_id
 CLIENT_SECRET=fake_secret
+SLACK_TOKEN=fake_token
