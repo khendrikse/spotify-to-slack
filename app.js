@@ -16,7 +16,13 @@ let spotifyAccessToken = ''
 let timeRemaining = 1000
 let currentSong = ''
 
-const getUserToken = (res) => userToken = res.json().socket._httpMessage.req.url.split('=')[1]
+const getUserToken = (req) => userToken = req.originalUrl.split('=')[1]
+
+const handleFatalError = (err) => {
+  console.error(err.message)
+  console.error(err.stack)
+  process.exit(1)
+}
 
 const getSpotifyAuth = (userToken) => {
   axios({
@@ -28,14 +34,14 @@ const getSpotifyAuth = (userToken) => {
       redirect_uri: callBackUrl
     },
     headers: {
-      Authorization: 'Basic ' + (new Buffer(clientID + ':' + clientSecret).toString('base64')),
+      Authorization: 'Basic ' + (Buffer.from(clientID + ':' + clientSecret).toString('base64')),
     }
   })
     .then(function (response) {
       spotifyAccessToken = response.data.access_token
       timerCheck()
     })
-    .catch(error => console.error(error))
+    .catch(handleFatalError)
 }
 
 const getCurrentlyPlaying = () => {
@@ -50,7 +56,7 @@ const getCurrentlyPlaying = () => {
       console.log('Timeout is:', timeRemaining, 'Song is: ', currentSong)
       setSlackStatus(currentSong)
     })
-    .catch(error => console.error(error))
+    .catch(handleFatalError)
 }
 
 const timerCheck = () => {
@@ -76,7 +82,7 @@ opn(`https://accounts.spotify.com/authorize?client_id=${clientID}&response_type=
 
 app.get('/callback', function (req, res) {
   res.send('You can now close this window 👋!')
-  getUserToken(res)
+  getUserToken(req)
   getSpotifyAuth(userToken)
 })
 
