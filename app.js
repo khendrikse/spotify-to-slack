@@ -16,6 +16,14 @@ let currentSong = '';
 
 const getUserToken = (req) => (userToken = req.originalUrl.split('=')[1]);
 
+process.on('SIGINT', async () => {
+  await setSlackStatus({
+    status_text: '',
+    status_emoji: '',
+  });
+  process.exit(1);
+});
+
 const handleFatalError = (err) => {
   console.error(err.message);
   console.error(err.stack);
@@ -61,7 +69,10 @@ const getCurrentlyPlaying = () => {
       const newSong = data.item.artists[0].name + ' - ' + data.item.name;
       if (newSong !== currentSong) {
         currentSong = data.item.artists[0].name + ' - ' + data.item.name;
-        setSlackStatus(currentSong);
+        setSlackStatus({
+          status_text: `${currentSong}`,
+          status_emoji: ':spotify:',
+        });
         console.log(
           'Time remaining:',
           `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`,
@@ -78,15 +89,12 @@ const timerCheck = () => {
   setTimeout(timerCheck, timeRemaining);
 };
 
-const setSlackStatus = (currentSong) => {
+const setSlackStatus = (profile) =>
   axios
     .post(
       'https://slack.com/api/users.profile.set',
       {
-        profile: {
-          status_text: `${currentSong}`,
-          status_emoji: ':spotify:',
-        },
+        profile,
       },
       {
         headers: {
@@ -95,7 +103,6 @@ const setSlackStatus = (currentSong) => {
       }
     )
     .catch((error) => console.error(error));
-};
 
 opn(
   `https://accounts.spotify.com/authorize?client_id=${clientID}&response_type=code&redirect_uri=${callBackUrl}&scope=user-read-currently-playing%20user-read-playback-state`
