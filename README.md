@@ -17,11 +17,12 @@ Clone the repository into your projects folder or:
 
 Make sure you have installed:
 * [Node.js](https://nodejs.org/en/)
-* [npm](https://github.com/npm/npm) (or Yarn) 
+* [npm](https://github.com/npm/npm) (or Yarn)
 
 And run:
 
-      $ npm install
+      $ yarn install
+
 
 To install the dependencies:
 * [express](http://expressjs.com/)
@@ -43,17 +44,17 @@ Add these to the .env file.
 
 #### Slack
 
-This app also uses an OAuth Access Token for Slack. To get this, login at [https://api.slack.com/apps](https://api.slack.com/apps) and create an app. Then add the users.profile:write permission to your app and install it to your workspace. 
+This app also uses an OAuth Access Token for Slack. To get this, login at [https://api.slack.com/apps](https://api.slack.com/apps) and create an app. Then add the users.profile:write permission to your app and install it to your workspace.
 
 Grab the OAuth Access Token and add it to your .env file.
 
 ### How to run the app
 
-Inside your terminal, change directories into the repository. There run: 
+Inside your terminal, change directories into the repository. There run:
 
-      $ node app.js
+      $ yarn start
 
-The user needs to give access to Spotify and afterwards the terminal can run in the background. 
+The user needs to give access to Spotify and afterwards the terminal can run in the background.
 
 ## Built With
 
